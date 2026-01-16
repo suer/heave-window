@@ -10,7 +10,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "arrow.up.and.down.and.arrow.left.and.right", accessibilityDescription: "HeaveWindow")
+            button.image = NSImage(named: "MenuIcon")
             button.action = #selector(statusBarButtonClicked)
         }
         let menu = NSMenu()
