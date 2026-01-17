@@ -65,9 +65,29 @@ jobs:
           cd ./build
           ditto -c -k --keepParent HeaveWindow.app HeaveWindow-${{ github.ref_name }}.zip
 
+      - name: Download Sparkle tools
+        run: |
+          curl -L -O https://github.com/sparkle-project/Sparkle/releases/download/2.8.1/Sparkle-2.8.1.tar.xz
+          tar xf Sparkle-2.8.1.tar.xz
+          chmod +x bin/generate_appcast
+
+      - name: Generate appcast
+        run: |
+          mkdir -p appcast-input
+          cp ./build/HeaveWindow-${{ github.ref_name }}.zip appcast-input/
+
+          curl -L -o appcast.xml "https://github.com/${{ github.repository }}/releases/latest/download/appcast.xml" || echo "No previous appcast found"
+          ./bin/generate_appcast --ed-key-file <(echo "$SPARKLE_PRIVATE_KEY") appcast-input/
+          cat appcast-input/appcast.xml
+          cp appcast-input/appcast.xml ./build/
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+
       - name: Create Release
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
-          files: ./build/HeaveWindow-${{ github.ref_name }}.zip
+          files: |
+            ./build/HeaveWindow-${{ github.ref_name }}.zip
+            ./build/appcast.xml
           draft: false
           prerelease: false
