@@ -8,7 +8,7 @@ updates:
       timezone: "Asia/Tokyo"
 
   - package-ecosystem: "swift"
-    directory: "/"
+    directory: "/HeaveWindowDependencies"
     schedule:
       interval: "weekly"
       day: "friday"

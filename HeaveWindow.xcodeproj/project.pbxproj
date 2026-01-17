@@ -117,8 +117,7 @@
 			mainGroup = 80FA39112F1A752700741C31;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				80B600562F1B1A0D00885BD4 /* XCRemoteSwiftPackageReference "Sparkle" */,
-				80C7001F2F1B2A0E00885BD4 /* XCRemoteSwiftPackageReference "Yams" */,
+				80D800222F1B3A0F00885BD4 /* XCLocalSwiftPackageReference "HeaveWindowDependencies" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 80FA391B2F1A752700741C31 /* Products */;
@@ -386,34 +385,20 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		80B600562F1B1A0D00885BD4 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sparkle-project/Sparkle";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.8.1;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		80D800222F1B3A0F00885BD4 /* XCLocalSwiftPackageReference "HeaveWindowDependencies" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = HeaveWindowDependencies;
 		};
-		80C7001F2F1B2A0E00885BD4 /* XCRemoteSwiftPackageReference "Yams" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/jpsim/Yams";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		80B600572F1B1A0D00885BD4 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 80B600562F1B1A0D00885BD4 /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
 		};
 		80C700202F1B2A0E00885BD4 /* Yams */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 80C7001F2F1B2A0E00885BD4 /* XCRemoteSwiftPackageReference "Yams" */;
 			productName = Yams;
 		};
 /* End XCSwiftPackageProductDependency section */
