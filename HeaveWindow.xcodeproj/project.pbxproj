@@ -6,13 +6,30 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		80B600582F1B1A0D00885BD4 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 80B600572F1B1A0D00885BD4 /* Sparkle */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		80FA391A2F1A752700741C31 /* HeaveWindow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HeaveWindow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		80B6005A2F1B1D1F00885BD4 /* Exceptions for "HeaveWindow" folder in "HeaveWindow" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 80FA39192F1A752700741C31 /* HeaveWindow */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		80FA391C2F1A752700741C31 /* HeaveWindow */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				80B6005A2F1B1D1F00885BD4 /* Exceptions for "HeaveWindow" folder in "HeaveWindow" target */,
+			);
 			path = HeaveWindow;
 			sourceTree = "<group>";
 		};
@@ -23,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				80B600582F1B1A0D00885BD4 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +83,7 @@
 			);
 			name = HeaveWindow;
 			packageProductDependencies = (
+				80B600572F1B1A0D00885BD4 /* Sparkle */,
 			);
 			productName = HeaveWindow;
 			productReference = 80FA391A2F1A752700741C31 /* HeaveWindow.app */;
@@ -94,6 +113,9 @@
 			);
 			mainGroup = 80FA39112F1A752700741C31;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				80B600562F1B1A0D00885BD4 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 80FA391B2F1A752700741C31 /* Products */;
 			projectDirPath = "";
@@ -263,6 +285,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HeaveWindow/Info.plist;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -309,6 +332,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HeaveWindow/Info.plist;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -357,6 +381,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		80B600562F1B1A0D00885BD4 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.8.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		80B600572F1B1A0D00885BD4 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 80B600562F1B1A0D00885BD4 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 80FA39122F1A752700741C31 /* Project object */;
 }
