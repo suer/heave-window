@@ -22,6 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.action = #selector(statusBarButtonClicked)
         }
         let menu = NSMenu()
+        menu.addItem(NSMenuItem(title: "About HeaveWindow", action: #selector(showAboutPanel), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
@@ -36,6 +37,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func checkForUpdates() {
         updaterController.checkForUpdates(nil)
+    }
+
+    @objc func showAboutPanel() {
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        NSApplication.shared.orderFrontStandardAboutPanel(nil)
     }
 
     func setupWithAccessibilityCheck() {
