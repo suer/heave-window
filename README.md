@@ -2,6 +2,8 @@
 
 A lightweight macOS window manager that lets you move and resize windows using keyboard.
 
+![HeaveWindow.gif](./images/HeaveWindow.gif)
+
 ## Features
 
 - Move and resize windows without using a mouse
