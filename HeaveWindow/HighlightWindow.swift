@@ -45,7 +45,9 @@ class HighlightWindow: NSWindow {
         var position = CGPoint.zero
         var size = CGSize.zero
 
+        // swiftlint:disable:next force_cast
         AXValueGetValue(positionValue as! AXValue, .cgPoint, &position)
+        // swiftlint:disable:next force_cast
         AXValueGetValue(sizeValue as! AXValue, .cgSize, &size)
 
         if let screen = NSScreen.main {

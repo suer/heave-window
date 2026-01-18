@@ -86,30 +86,30 @@ class WindowOperation {
             return nil
         case 126, 40: // Up, k
             if isShiftPressed {
-                resizeWindow(dw: 0, dh: -20)
+                resizeWindow(deltaWidth: 0, deltaHeight: -20)
             } else {
-                moveWindow(dx: 0, dy: -20)
+                moveWindow(deltaX: 0, deltaY: -20)
             }
             return nil
         case 125, 38: // Down, j
             if isShiftPressed {
-                resizeWindow(dw: 0, dh: 20)
+                resizeWindow(deltaWidth: 0, deltaHeight: 20)
             } else {
-                moveWindow(dx: 0, dy: 20)
+                moveWindow(deltaX: 0, deltaY: 20)
             }
             return nil
         case 123, 4: // Left, h
             if isShiftPressed {
-                resizeWindow(dw: -20, dh: 0)
+                resizeWindow(deltaWidth: -20, deltaHeight: 0)
             } else {
-                moveWindow(dx: -20, dy: 0)
+                moveWindow(deltaX: -20, deltaY: 0)
             }
             return nil
         case 124, 37: // Right, l
             if isShiftPressed {
-                resizeWindow(dw: 20, dh: 0)
+                resizeWindow(deltaWidth: 20, deltaHeight: 0)
             } else {
-                moveWindow(dx: 20, dy: 0)
+                moveWindow(deltaX: 20, deltaY: 0)
             }
             return nil
         default:
@@ -124,14 +124,15 @@ class WindowOperation {
         var value: AnyObject?
         let result = AXUIElementCopyAttributeValue(appRef, kAXFocusedWindowAttribute as CFString, &value)
 
-        if result == .success, let window = value as! AXUIElement? {
-            return window
+        if result == .success {
+            // swiftlint:disable:next force_cast
+            return (value as! AXUIElement)
         }
 
         return nil
     }
 
-    private func moveWindow(dx: CGFloat, dy: CGFloat) {
+    private func moveWindow(deltaX: CGFloat, deltaY: CGFloat) {
         guard let window = currentWindow else { return }
 
         var positionValue: AnyObject?
@@ -140,10 +141,11 @@ class WindowOperation {
         guard result == .success, let position = positionValue else { return }
 
         var point = CGPoint.zero
+        // swiftlint:disable:next force_cast
         AXValueGetValue(position as! AXValue, .cgPoint, &point)
 
-        point.x += dx
-        point.y += dy
+        point.x += deltaX
+        point.y += deltaY
 
         if let newPosition = AXValueCreate(.cgPoint, &point) {
             AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, newPosition)
@@ -151,7 +153,7 @@ class WindowOperation {
         }
     }
 
-    private func resizeWindow(dw: CGFloat, dh: CGFloat) {
+    private func resizeWindow(deltaWidth: CGFloat, deltaHeight: CGFloat) {
         guard let window = currentWindow else { return }
 
         var sizeValue: AnyObject?
@@ -160,10 +162,11 @@ class WindowOperation {
         guard result == .success, let size = sizeValue else { return }
 
         var currentSize = CGSize.zero
+        // swiftlint:disable:next force_cast
         AXValueGetValue(size as! AXValue, .cgSize, &currentSize)
 
-        currentSize.width = max(100, currentSize.width + dw)
-        currentSize.height = max(100, currentSize.height + dh)
+        currentSize.width = max(100, currentSize.width + deltaWidth)
+        currentSize.height = max(100, currentSize.height + deltaHeight)
 
         if let newSize = AXValueCreate(.cgSize, &currentSize) {
             AXUIElementSetAttributeValue(window, kAXSizeAttribute as CFString, newSize)
