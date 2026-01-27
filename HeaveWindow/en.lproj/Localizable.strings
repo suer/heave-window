@@ -1,0 +1,6 @@
+/* Menu Items */
+"menu.about" = "About HeaveWindow";
+"menu.checkForUpdates" = "Check for Updates...";
+"menu.launchAtLogin" = "Launch at Login";
+"menu.settings" = "Settings...";
+"menu.quit" = "Quit";

@@ -27,14 +27,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         let menu = NSMenu()
         menu.addItem(
-            NSMenuItem(title: "About HeaveWindow", action: #selector(showAboutPanel), keyEquivalent: ""))
+            NSMenuItem(title: NSLocalizedString("menu.about", comment: "About menu item"), action: #selector(showAboutPanel), keyEquivalent: ""))
         menu.addItem(
             NSMenuItem(
-                title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: ""))
+                title: NSLocalizedString("menu.checkForUpdates", comment: "Check for updates menu item"), action: #selector(checkForUpdates), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         if #available(macOS 13.0, *) {
             let launchAtLoginItem = NSMenuItem(
-                title: "Launch at Login",
+                title: NSLocalizedString("menu.launchAtLogin", comment: "Launch at login menu item"),
                 action: #selector(toggleLaunchAtLogin),
                 keyEquivalent: ""
             )
@@ -43,10 +43,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         menu.addItem(
             NSMenuItem(
-                title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+                title: NSLocalizedString("menu.settings", comment: "Settings menu item"), action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(
-            NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+            NSMenuItem(title: NSLocalizedString("menu.quit", comment: "Quit menu item"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         statusItem?.menu = menu
 
         setupWithAccessibilityCheck()
