@@ -20,7 +20,9 @@ A lightweight macOS window manager that lets you move and resize windows using k
    - `k` or `↑` : Move up
    - `l` or `→` : Move right
 3. Hold `Shift` while pressing movement keys to resize instead of move
-4. Press `Escape` or `Enter` to exit move mode
+4. Hold `Ctrl` while pressing movement keys to move by 100px instead of 20px
+5. Hold `Ctrl + Shift` while pressing movement keys to resize by 100px instead of 20px
+6. Press `Escape` or `Enter` to exit move mode
 
 ### Custom Hotkey Configuration
 
