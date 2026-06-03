@@ -86,34 +86,51 @@ class WindowOperation {
     private func handleMoveMode(keyCode: Int64, event: CGEvent) -> Unmanaged<CGEvent>? {
         let flags = event.flags
         let isShiftPressed = flags.contains(.maskShift)
+        let isCtrlPressed = flags.contains(.maskControl)
 
         switch keyCode {
         case 53, 36:  // ESC, Enter
             toggleMoveMode()
             return nil
         case 126, 40:  // Up, k
-            if isShiftPressed {
+            if isCtrlPressed && isShiftPressed {
+                resizeWindow(deltaWidth: 0, deltaHeight: -100)
+            } else if isCtrlPressed {
+                moveWindow(deltaX: 0, deltaY: -100)
+            } else if isShiftPressed {
                 resizeWindow(deltaWidth: 0, deltaHeight: -20)
             } else {
                 moveWindow(deltaX: 0, deltaY: -20)
             }
             return nil
         case 125, 38:  // Down, j
-            if isShiftPressed {
+            if isCtrlPressed && isShiftPressed {
+                resizeWindow(deltaWidth: 0, deltaHeight: 100)
+            } else if isCtrlPressed {
+                moveWindow(deltaX: 0, deltaY: 100)
+            } else if isShiftPressed {
                 resizeWindow(deltaWidth: 0, deltaHeight: 20)
             } else {
                 moveWindow(deltaX: 0, deltaY: 20)
             }
             return nil
         case 123, 4:  // Left, h
-            if isShiftPressed {
+            if isCtrlPressed && isShiftPressed {
+                resizeWindow(deltaWidth: -100, deltaHeight: 0)
+            } else if isCtrlPressed {
+                moveWindow(deltaX: -100, deltaY: 0)
+            } else if isShiftPressed {
                 resizeWindow(deltaWidth: -20, deltaHeight: 0)
             } else {
                 moveWindow(deltaX: -20, deltaY: 0)
             }
             return nil
         case 124, 37:  // Right, l
-            if isShiftPressed {
+            if isCtrlPressed && isShiftPressed {
+                resizeWindow(deltaWidth: 100, deltaHeight: 0)
+            } else if isCtrlPressed {
+                moveWindow(deltaX: 100, deltaY: 0)
+            } else if isShiftPressed {
                 resizeWindow(deltaWidth: 20, deltaHeight: 0)
             } else {
                 moveWindow(deltaX: 20, deltaY: 0)
