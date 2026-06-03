@@ -85,59 +85,36 @@ class WindowOperation {
 
     private func handleMoveMode(keyCode: Int64, event: CGEvent) -> Unmanaged<CGEvent>? {
         let flags = event.flags
-        let isShiftPressed = flags.contains(.maskShift)
-        let isCtrlPressed = flags.contains(.maskControl)
+        let isShift = flags.contains(.maskShift)
+        let isCtrl = flags.contains(.maskControl)
 
         switch keyCode {
         case 53, 36:  // ESC, Enter
             toggleMoveMode()
             return nil
         case 126, 40:  // Up, k
-            if isCtrlPressed && isShiftPressed {
-                resizeWindow(deltaWidth: 0, deltaHeight: -100)
-            } else if isCtrlPressed {
-                moveWindow(deltaX: 0, deltaY: -100)
-            } else if isShiftPressed {
-                resizeWindow(deltaWidth: 0, deltaHeight: -20)
-            } else {
-                moveWindow(deltaX: 0, deltaY: -20)
-            }
+            applyAction(dx: 0, dy: -1, isCtrl: isCtrl, isShift: isShift)
             return nil
         case 125, 38:  // Down, j
-            if isCtrlPressed && isShiftPressed {
-                resizeWindow(deltaWidth: 0, deltaHeight: 100)
-            } else if isCtrlPressed {
-                moveWindow(deltaX: 0, deltaY: 100)
-            } else if isShiftPressed {
-                resizeWindow(deltaWidth: 0, deltaHeight: 20)
-            } else {
-                moveWindow(deltaX: 0, deltaY: 20)
-            }
+            applyAction(dx: 0, dy: 1, isCtrl: isCtrl, isShift: isShift)
             return nil
         case 123, 4:  // Left, h
-            if isCtrlPressed && isShiftPressed {
-                resizeWindow(deltaWidth: -100, deltaHeight: 0)
-            } else if isCtrlPressed {
-                moveWindow(deltaX: -100, deltaY: 0)
-            } else if isShiftPressed {
-                resizeWindow(deltaWidth: -20, deltaHeight: 0)
-            } else {
-                moveWindow(deltaX: -20, deltaY: 0)
-            }
+            applyAction(dx: -1, dy: 0, isCtrl: isCtrl, isShift: isShift)
             return nil
         case 124, 37:  // Right, l
-            if isCtrlPressed && isShiftPressed {
-                resizeWindow(deltaWidth: 100, deltaHeight: 0)
-            } else if isCtrlPressed {
-                moveWindow(deltaX: 100, deltaY: 0)
-            } else if isShiftPressed {
-                resizeWindow(deltaWidth: 20, deltaHeight: 0)
-            } else {
-                moveWindow(deltaX: 20, deltaY: 0)
-            }
+            applyAction(dx: 1, dy: 0, isCtrl: isCtrl, isShift: isShift)
             return nil
         default:
             return Unmanaged.passUnretained(event)
+        }
+    }
+
+    private func applyAction(dx: CGFloat, dy: CGFloat, isCtrl: Bool, isShift: Bool) {
+        let step: CGFloat = isCtrl ? 100 : 20
+        if isShift {
+            resizeWindow(deltaWidth: dx * step, deltaHeight: dy * step)
+        } else {
+            moveWindow(deltaX: dx * step, deltaY: dy * step)
         }
     }
 
