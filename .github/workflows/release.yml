@@ -81,8 +81,8 @@ jobs:
 
       - name: Download Sparkle tools
         run: |
-          curl -L -O https://github.com/sparkle-project/Sparkle/releases/download/2.9.2/Sparkle-2.9.2.tar.xz
-          tar xf Sparkle-2.9.2.tar.xz
+          curl -L -O https://github.com/sparkle-project/Sparkle/releases/download/2.9.3/Sparkle-2.9.3.tar.xz
+          tar xf Sparkle-2.9.3.tar.xz
           chmod +x bin/generate_appcast
 
       - name: Generate appcast
