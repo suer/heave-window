@@ -79,11 +79,16 @@ jobs:
           cd ./build
           ditto -c -k --keepParent HeaveWindow.app HeaveWindow-${{ github.ref_name }}.zip
 
-      - name: Download Sparkle tools
+      - name: Locate Sparkle tools
+        id: sparkle
         run: |
-          curl -L -O https://github.com/sparkle-project/Sparkle/releases/download/2.9.4/Sparkle-2.9.4.tar.xz
-          tar xf Sparkle-2.9.4.tar.xz
-          chmod +x bin/generate_appcast
+          GENERATE_APPCAST=$(find ~/Library/Developer/Xcode/DerivedData -name "generate_appcast" -print -quit)
+          if [ -z "$GENERATE_APPCAST" ]; then
+            echo "generate_appcast not found under DerivedData" >&2
+            exit 1
+          fi
+          chmod +x "$GENERATE_APPCAST"
+          echo "generate_appcast=$GENERATE_APPCAST" >> "$GITHUB_OUTPUT"
 
       - name: Generate appcast
         run: |
@@ -91,11 +96,12 @@ jobs:
           cp ./build/HeaveWindow-${{ github.ref_name }}.zip appcast-input/
 
           curl -L -o appcast.xml "https://github.com/${{ github.repository }}/releases/latest/download/appcast.xml" || echo "No previous appcast found"
-          ./bin/generate_appcast --ed-key-file <(echo "$SPARKLE_PRIVATE_KEY") appcast-input/
+          "$GENERATE_APPCAST" --ed-key-file <(echo "$SPARKLE_PRIVATE_KEY") appcast-input/
           cat appcast-input/appcast.xml
           cp appcast-input/appcast.xml ./build/
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          GENERATE_APPCAST: ${{ steps.sparkle.outputs.generate_appcast }}
 
       - name: Create Release
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
