@@ -5,6 +5,10 @@ import os
 private let logger = Logger(subsystem: "com.heavewindow.HeaveWindow", category: "WindowOperation")
 
 class WindowOperation {
+    private static let moveStep: CGFloat = 20
+    private static let fastMoveStep: CGFloat = 100
+    private static let minWindowDimension: CGFloat = 100
+
     private var isInMoveMode = false
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -151,7 +155,7 @@ class WindowOperation {
     }
 
     private func applyAction(dx: CGFloat, dy: CGFloat, isCtrl: Bool, isShift: Bool) {
-        let step: CGFloat = isCtrl ? 100 : 20
+        let step = isCtrl ? Self.fastMoveStep : Self.moveStep
         if isShift {
             resizeWindow(deltaWidth: dx * step, deltaHeight: dy * step)
         } else {
@@ -187,8 +191,8 @@ class WindowOperation {
     private func resizeWindow(deltaWidth: CGFloat, deltaHeight: CGFloat) {
         guard let window = currentWindow, var size = window.size else { return }
 
-        size.width = max(100, size.width + deltaWidth)
-        size.height = max(100, size.height + deltaHeight)
+        size.width = max(Self.minWindowDimension, size.width + deltaWidth)
+        size.height = max(Self.minWindowDimension, size.height + deltaHeight)
 
         window.setSize(size)
     }
