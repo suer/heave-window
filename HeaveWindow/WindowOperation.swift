@@ -13,7 +13,7 @@ class WindowOperation {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var currentWindow: AXUIElement?
-    private var highlightWindow: HighlightWindow?
+    private let highlightWindow = HighlightWindow()
     private var workspaceObserver: NSObjectProtocol?
     private var windowObserver: AXObserver?
     private var configObserver: NSObjectProtocol?
@@ -24,7 +24,6 @@ class WindowOperation {
         self.config = config
         hotkey = ParsedHotkey.from(config: config.hotkeyConfig)
         setupEventTap()
-        highlightWindow = HighlightWindow()
         setupWorkspaceObserver()
         setupConfigObserver()
     }
@@ -120,13 +119,13 @@ class WindowOperation {
 
         isInMoveMode = true
         currentWindow = window
-        highlightWindow?.highlight(window: window)
+        highlightWindow.highlight(window: window)
         startObservingWindow(window)
     }
 
     private func exitMoveMode() {
         isInMoveMode = false
-        highlightWindow?.hide()
+        highlightWindow.hide()
         stopObservingWindow()
         currentWindow = nil
     }
@@ -227,7 +226,7 @@ class WindowOperation {
                 guard let refcon = refcon else { return }
                 let operation = Unmanaged<WindowOperation>.fromOpaque(refcon).takeUnretainedValue()
                 DispatchQueue.main.async {
-                    operation.highlightWindow?.highlight(window: element)
+                    operation.highlightWindow.highlight(window: element)
                 }
             }, &observer)
 
