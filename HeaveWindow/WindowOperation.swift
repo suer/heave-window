@@ -115,12 +115,12 @@ class WindowOperation {
     }
 
     private func enterMoveMode() {
-        guard let window = getActiveWindow() else { return }
+        guard let (window, pid) = getActiveWindow() else { return }
 
         isInMoveMode = true
         currentWindow = window
         highlightWindow.highlight(window: window)
-        startObservingWindow(window)
+        startObservingWindow(window, pid: pid)
     }
 
     private func exitMoveMode() {
@@ -165,9 +165,10 @@ class WindowOperation {
         }
     }
 
-    private func getActiveWindow() -> AXUIElement? {
+    private func getActiveWindow() -> (window: AXUIElement, pid: pid_t)? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
-        let appRef = AXUIElementCreateApplication(app.processIdentifier)
+        let pid = app.processIdentifier
+        let appRef = AXUIElementCreateApplication(pid)
 
         var value: AnyObject?
         let result = AXUIElementCopyAttributeValue(
@@ -175,7 +176,7 @@ class WindowOperation {
 
         if result == .success, let value = value, CFGetTypeID(value) == AXUIElementGetTypeID() {
             // swiftlint:disable:next force_cast
-            return (value as! AXUIElement)
+            return (value as! AXUIElement, pid)
         }
 
         return nil
@@ -215,10 +216,7 @@ class WindowOperation {
         }
     }
 
-    private func startObservingWindow(_ window: AXUIElement) {
-        guard let app = NSWorkspace.shared.frontmostApplication else { return }
-        let pid = app.processIdentifier
-
+    private func startObservingWindow(_ window: AXUIElement, pid: pid_t) {
         var observer: AXObserver?
         let result = AXObserverCreate(
             pid,
