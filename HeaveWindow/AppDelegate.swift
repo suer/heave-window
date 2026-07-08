@@ -33,10 +33,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
         menu.addItem(
-            NSMenuItem(title: NSLocalizedString("menu.about", comment: "About menu item"), action: #selector(showAboutPanel), keyEquivalent: ""))
+            NSMenuItem(
+                title: NSLocalizedString("menu.about", comment: "About menu item"),
+                action: #selector(showAboutPanel),
+                keyEquivalent: ""
+            ))
         menu.addItem(
             NSMenuItem(
-                title: NSLocalizedString("menu.checkForUpdates", comment: "Check for updates menu item"), action: #selector(checkForUpdates), keyEquivalent: ""))
+                title: NSLocalizedString("menu.checkForUpdates", comment: "Check for updates menu item"),
+                action: #selector(checkForUpdates),
+                keyEquivalent: ""
+            ))
         menu.addItem(NSMenuItem.separator())
         if #available(macOS 13.0, *) {
             let launchAtLoginItem = NSMenuItem(
@@ -49,10 +56,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         menu.addItem(
             NSMenuItem(
-                title: NSLocalizedString("menu.settings", comment: "Settings menu item"), action: #selector(openSettings), keyEquivalent: ","))
+                title: NSLocalizedString("menu.settings", comment: "Settings menu item"),
+                action: #selector(openSettings),
+                keyEquivalent: ","
+            ))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(
-            NSMenuItem(title: NSLocalizedString("menu.quit", comment: "Quit menu item"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+            NSMenuItem(
+                title: NSLocalizedString("menu.quit", comment: "Quit menu item"),
+                action: #selector(NSApplication.terminate(_:)),
+                keyEquivalent: "q"
+            ))
         return menu
     }
 

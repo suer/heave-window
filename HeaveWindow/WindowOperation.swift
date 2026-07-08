@@ -140,28 +140,28 @@ class WindowOperation {
             toggleMoveMode()
             return nil
         case kVK_UpArrow, kVK_ANSI_K:
-            applyAction(dx: 0, dy: -1, isCtrl: isCtrl, isShift: isShift)
+            applyAction(deltaX: 0, deltaY: -1, isCtrl: isCtrl, isShift: isShift)
             return nil
         case kVK_DownArrow, kVK_ANSI_J:
-            applyAction(dx: 0, dy: 1, isCtrl: isCtrl, isShift: isShift)
+            applyAction(deltaX: 0, deltaY: 1, isCtrl: isCtrl, isShift: isShift)
             return nil
         case kVK_LeftArrow, kVK_ANSI_H:
-            applyAction(dx: -1, dy: 0, isCtrl: isCtrl, isShift: isShift)
+            applyAction(deltaX: -1, deltaY: 0, isCtrl: isCtrl, isShift: isShift)
             return nil
         case kVK_RightArrow, kVK_ANSI_L:
-            applyAction(dx: 1, dy: 0, isCtrl: isCtrl, isShift: isShift)
+            applyAction(deltaX: 1, deltaY: 0, isCtrl: isCtrl, isShift: isShift)
             return nil
         default:
             return Unmanaged.passUnretained(event)
         }
     }
 
-    private func applyAction(dx: CGFloat, dy: CGFloat, isCtrl: Bool, isShift: Bool) {
+    private func applyAction(deltaX: CGFloat, deltaY: CGFloat, isCtrl: Bool, isShift: Bool) {
         let step = isCtrl ? Self.fastMoveStep : Self.moveStep
         if isShift {
-            resizeWindow(deltaWidth: dx * step, deltaHeight: dy * step)
+            resizeWindow(deltaWidth: deltaX * step, deltaHeight: deltaY * step)
         } else {
-            moveWindow(deltaX: dx * step, deltaY: dy * step)
+            moveWindow(deltaX: deltaX * step, deltaY: deltaY * step)
         }
     }
 
