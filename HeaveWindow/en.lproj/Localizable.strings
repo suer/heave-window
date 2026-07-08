@@ -4,3 +4,7 @@
 "menu.launchAtLogin" = "Launch at Login";
 "menu.settings" = "Settings...";
 "menu.quit" = "Quit";
+
+/* Alerts */
+"alert.eventTapFailed.title" = "Failed to start keyboard monitoring";
+"alert.eventTapFailed.message" = "HeaveWindow could not create an event tap, so the hotkey will not work. Please check Accessibility and Input Monitoring permissions in System Settings, then restart the app.";

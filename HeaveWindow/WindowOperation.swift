@@ -1,5 +1,8 @@
 import Carbon
 import Cocoa
+import os
+
+private let logger = Logger(subsystem: "com.heavewindow.HeaveWindow", category: "WindowOperation")
 
 class WindowOperation {
     private var isInMoveMode = false
@@ -9,13 +12,25 @@ class WindowOperation {
     private var highlightWindow: HighlightWindow?
     private var workspaceObserver: NSObjectProtocol?
     private var windowObserver: AXObserver?
-    private let hotkey: ParsedHotkey
+    private var configObserver: NSObjectProtocol?
+    private var hotkey: ParsedHotkey
 
     init() {
         hotkey = ParsedHotkey.from(config: Config.shared.hotkeyConfig)
         setupEventTap()
         highlightWindow = HighlightWindow()
         setupWorkspaceObserver()
+        setupConfigObserver()
+    }
+
+    private func setupConfigObserver() {
+        configObserver = NotificationCenter.default.addObserver(
+            forName: Config.didReloadNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.hotkey = ParsedHotkey.from(config: Config.shared.hotkeyConfig)
+        }
     }
 
     private func setupEventTap() {
@@ -35,6 +50,8 @@ class WindowOperation {
                 userInfo: Unmanaged.passUnretained(self).toOpaque()
             )
         else {
+            logger.error("Failed to create event tap")
+            showEventTapFailureAlert()
             return
         }
 
@@ -44,9 +61,26 @@ class WindowOperation {
         CGEvent.tapEnable(tap: eventTap, enable: true)
     }
 
+    private func showEventTapFailureAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = NSLocalizedString(
+            "alert.eventTapFailed.title", comment: "Event tap failure alert title")
+        alert.informativeText = NSLocalizedString(
+            "alert.eventTapFailed.message", comment: "Event tap failure alert message")
+        alert.runModal()
+    }
+
     private func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<
         CGEvent
     >? {
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            if let eventTap = eventTap {
+                CGEvent.tapEnable(tap: eventTap, enable: true)
+            }
+            return Unmanaged.passUnretained(event)
+        }
+
         guard type == .keyDown else {
             return Unmanaged.passUnretained(event)
         }
@@ -240,6 +274,9 @@ class WindowOperation {
         stopObservingWindow()
         if let observer = workspaceObserver {
             NSWorkspace.shared.notificationCenter.removeObserver(observer)
+        }
+        if let observer = configObserver {
+            NotificationCenter.default.removeObserver(observer)
         }
     }
 }

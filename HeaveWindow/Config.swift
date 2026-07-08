@@ -21,8 +21,11 @@ struct AppConfig: Decodable {
 class Config {
     static let shared = Config()
 
+    static let didReloadNotification = Notification.Name("ConfigDidReload")
+
     let configPath: String
     private(set) var appConfig: AppConfig?
+    private var configDirectoryMonitor: DispatchSourceFileSystemObject?
 
     static let defaultConfigContent = """
         hotkey:
@@ -40,9 +43,14 @@ class Config {
         let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
         configPath = "\(homeDir)/.config/heave-window/config.yml"
         reload()
+        startWatchingConfigDirectory()
     }
 
     func reload() {
+        defer {
+            NotificationCenter.default.post(name: Config.didReloadNotification, object: self)
+        }
+
         guard FileManager.default.fileExists(atPath: configPath),
             let yamlString = try? String(contentsOfFile: configPath, encoding: .utf8)
         else {
@@ -52,11 +60,29 @@ class Config {
 
         do {
             appConfig = try YAMLDecoder().decode(AppConfig.self, from: yamlString)
-            logger.error("config: \(yamlString)")
         } catch {
             logger.error("Failed to parse config: \(error)")
             appConfig = nil
         }
+    }
+
+    private func startWatchingConfigDirectory() {
+        guard configDirectoryMonitor == nil else { return }
+
+        let configDir = (configPath as NSString).deletingLastPathComponent
+        let fileDescriptor = open(configDir, O_EVTONLY)
+        guard fileDescriptor >= 0 else { return }
+
+        let monitor = DispatchSource.makeFileSystemObjectSource(
+            fileDescriptor: fileDescriptor, eventMask: .write, queue: .main)
+        monitor.setEventHandler { [weak self] in
+            self?.reload()
+        }
+        monitor.setCancelHandler {
+            close(fileDescriptor)
+        }
+        monitor.resume()
+        configDirectoryMonitor = monitor
     }
 
     func createDefaultConfigIfNeeded() -> Bool {
@@ -71,6 +97,7 @@ class Config {
             try Config.defaultConfigContent.write(
                 toFile: configPath, atomically: true, encoding: .utf8)
             reload()
+            startWatchingConfigDirectory()
             return true
         } catch {
             logger.error("Failed to create default config: \(error)")
