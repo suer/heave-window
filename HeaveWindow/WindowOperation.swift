@@ -129,20 +129,20 @@ class WindowOperation {
         let isShift = flags.contains(.maskShift)
         let isCtrl = flags.contains(.maskControl)
 
-        switch keyCode {
-        case 53, 36:  // ESC, Enter
+        switch Int(keyCode) {
+        case kVK_Escape, kVK_Return:
             toggleMoveMode()
             return nil
-        case 126, 40:  // Up, k
+        case kVK_UpArrow, kVK_ANSI_K:
             applyAction(dx: 0, dy: -1, isCtrl: isCtrl, isShift: isShift)
             return nil
-        case 125, 38:  // Down, j
+        case kVK_DownArrow, kVK_ANSI_J:
             applyAction(dx: 0, dy: 1, isCtrl: isCtrl, isShift: isShift)
             return nil
-        case 123, 4:  // Left, h
+        case kVK_LeftArrow, kVK_ANSI_H:
             applyAction(dx: -1, dy: 0, isCtrl: isCtrl, isShift: isShift)
             return nil
-        case 124, 37:  // Right, l
+        case kVK_RightArrow, kVK_ANSI_L:
             applyAction(dx: 1, dy: 0, isCtrl: isCtrl, isShift: isShift)
             return nil
         default:
