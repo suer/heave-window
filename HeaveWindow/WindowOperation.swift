@@ -1,5 +1,8 @@
 import Carbon
 import Cocoa
+import os
+
+private let logger = Logger(subsystem: "com.heavewindow.HeaveWindow", category: "WindowOperation")
 
 class WindowOperation {
     private var isInMoveMode = false
@@ -35,6 +38,8 @@ class WindowOperation {
                 userInfo: Unmanaged.passUnretained(self).toOpaque()
             )
         else {
+            logger.error("Failed to create event tap")
+            showEventTapFailureAlert()
             return
         }
 
@@ -42,6 +47,16 @@ class WindowOperation {
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: eventTap, enable: true)
+    }
+
+    private func showEventTapFailureAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = NSLocalizedString(
+            "alert.eventTapFailed.title", comment: "Event tap failure alert title")
+        alert.informativeText = NSLocalizedString(
+            "alert.eventTapFailed.message", comment: "Event tap failure alert message")
+        alert.runModal()
     }
 
     private func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<

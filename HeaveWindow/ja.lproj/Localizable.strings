@@ -4,3 +4,7 @@
 "menu.launchAtLogin" = "ログイン時に起動";
 "menu.settings" = "設定...";
 "menu.quit" = "終了";
+
+/* Alerts */
+"alert.eventTapFailed.title" = "キーボード監視を開始できませんでした";
+"alert.eventTapFailed.message" = "イベントタップを作成できなかったため、ホットキーが動作しません。システム設定でアクセシビリティと入力監視の許可を確認し、アプリを再起動してください。";
