@@ -23,10 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
-        if let button = statusItem?.button {
-            button.image = NSImage(named: "MenuIcon")
-            button.action = #selector(statusBarButtonClicked)
-        }
+        statusItem?.button?.image = NSImage(named: "MenuIcon")
         let menu = NSMenu()
         menu.addItem(
             NSMenuItem(title: NSLocalizedString("menu.about", comment: "About menu item"), action: #selector(showAboutPanel), keyEquivalent: ""))
@@ -52,10 +49,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem?.menu = menu
 
         setupWithAccessibilityCheck()
-    }
-
-    @objc func statusBarButtonClicked() {
-        statusItem?.menu?.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
     }
 
     @objc func checkForUpdates() {
