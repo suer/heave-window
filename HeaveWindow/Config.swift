@@ -52,7 +52,6 @@ class Config {
 
         do {
             appConfig = try YAMLDecoder().decode(AppConfig.self, from: yamlString)
-            logger.error("config: \(yamlString)")
         } catch {
             logger.error("Failed to parse config: \(error)")
             appConfig = nil
