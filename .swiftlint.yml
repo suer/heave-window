@@ -3,7 +3,6 @@ excluded:
   - vendor
 
 disabled_rules:
-  - force_cast
   - block_based_kvo
   - trailing_comma # covered-by swift-format
 

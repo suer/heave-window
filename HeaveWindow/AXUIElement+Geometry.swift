@@ -32,10 +32,11 @@ extension AXUIElement {
     private func axValue(attribute: String) -> AXValue? {
         var value: AnyObject?
         guard AXUIElementCopyAttributeValue(self, attribute as CFString, &value) == .success,
-            let value = value
+            let value = value, CFGetTypeID(value) == AXValueGetTypeID()
         else {
             return nil
         }
+        // swiftlint:disable:next force_cast
         return (value as! AXValue)
     }
 }

@@ -174,7 +174,7 @@ class WindowOperation {
         let result = AXUIElementCopyAttributeValue(
             appRef, kAXFocusedWindowAttribute as CFString, &value)
 
-        if result == .success {
+        if result == .success, let value = value, CFGetTypeID(value) == AXUIElementGetTypeID() {
             // swiftlint:disable:next force_cast
             return (value as! AXUIElement)
         }
