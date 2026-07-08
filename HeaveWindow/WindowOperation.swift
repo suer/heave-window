@@ -169,44 +169,21 @@ class WindowOperation {
     }
 
     private func moveWindow(deltaX: CGFloat, deltaY: CGFloat) {
-        guard let window = currentWindow else { return }
-
-        var positionValue: AnyObject?
-        let result = AXUIElementCopyAttributeValue(
-            window, kAXPositionAttribute as CFString, &positionValue)
-
-        guard result == .success, let position = positionValue else { return }
-
-        var point = CGPoint.zero
-        // swiftlint:disable:next force_cast
-        AXValueGetValue(position as! AXValue, .cgPoint, &point)
+        guard let window = currentWindow, var point = window.position else { return }
 
         point.x += deltaX
         point.y += deltaY
 
-        if let newPosition = AXValueCreate(.cgPoint, &point) {
-            AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, newPosition)
-        }
+        window.setPosition(point)
     }
 
     private func resizeWindow(deltaWidth: CGFloat, deltaHeight: CGFloat) {
-        guard let window = currentWindow else { return }
+        guard let window = currentWindow, var size = window.size else { return }
 
-        var sizeValue: AnyObject?
-        let result = AXUIElementCopyAttributeValue(window, kAXSizeAttribute as CFString, &sizeValue)
+        size.width = max(100, size.width + deltaWidth)
+        size.height = max(100, size.height + deltaHeight)
 
-        guard result == .success, let size = sizeValue else { return }
-
-        var currentSize = CGSize.zero
-        // swiftlint:disable:next force_cast
-        AXValueGetValue(size as! AXValue, .cgSize, &currentSize)
-
-        currentSize.width = max(100, currentSize.width + deltaWidth)
-        currentSize.height = max(100, currentSize.height + deltaHeight)
-
-        if let newSize = AXValueCreate(.cgSize, &currentSize) {
-            AXUIElementSetAttributeValue(window, kAXSizeAttribute as CFString, newSize)
-        }
+        window.setSize(size)
     }
 
     private func setupWorkspaceObserver() {
