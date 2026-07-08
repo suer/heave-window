@@ -258,6 +258,10 @@ class WindowOperation {
     deinit {
         if let eventTap = eventTap {
             CGEvent.tapEnable(tap: eventTap, enable: false)
+            CFMachPortInvalidate(eventTap)
+        }
+        if let runLoopSource = runLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
         }
         stopObservingWindow()
         if let observer = workspaceObserver {
