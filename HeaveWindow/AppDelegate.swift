@@ -5,7 +5,7 @@ import SwiftUI
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var windowOperation: WindowOperation?
-    var accessibilityCheckTimer: Timer?
+    private var accessibilityObserver: NSObjectProtocol?
     private let updaterController: SPUStandardUpdaterController
     private var configParseErrorObserver: NSObjectProtocol?
 
@@ -97,22 +97,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
             AXIsProcessTrustedWithOptions(options as CFDictionary)
-            startAccessibilityPolling()
+            startObservingAccessibilityGrant()
         }
     }
 
-    func startAccessibilityPolling() {
-        accessibilityCheckTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            if AXIsProcessTrusted() {
-                self?.enableWindowOperation()
-                self?.stopAccessibilityPolling()
+    private func startObservingAccessibilityGrant() {
+        accessibilityObserver = DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name("com.apple.accessibility.api"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            // The notification can arrive before the permission change is visible
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                guard let self = self, AXIsProcessTrusted() else { return }
+                self.enableWindowOperation()
+                self.stopObservingAccessibilityGrant()
             }
         }
     }
 
-    func stopAccessibilityPolling() {
-        accessibilityCheckTimer?.invalidate()
-        accessibilityCheckTimer = nil
+    private func stopObservingAccessibilityGrant() {
+        if let observer = accessibilityObserver {
+            DistributedNotificationCenter.default().removeObserver(observer)
+            accessibilityObserver = nil
+        }
     }
 
     func enableWindowOperation() {
