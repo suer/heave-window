@@ -5,6 +5,10 @@ import os
 private let logger = Logger(subsystem: "com.heavewindow.HeaveWindow", category: "WindowOperation")
 
 class WindowOperation {
+    private static let moveStep: CGFloat = 20
+    private static let fastMoveStep: CGFloat = 100
+    private static let minWindowDimension: CGFloat = 100
+
     private var isInMoveMode = false
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -14,9 +18,11 @@ class WindowOperation {
     private var windowObserver: AXObserver?
     private var configObserver: NSObjectProtocol?
     private var hotkey: ParsedHotkey
+    private let config: Config
 
-    init() {
-        hotkey = ParsedHotkey.from(config: Config.shared.hotkeyConfig)
+    init(config: Config = .shared) {
+        self.config = config
+        hotkey = ParsedHotkey.from(config: config.hotkeyConfig)
         setupEventTap()
         highlightWindow = HighlightWindow()
         setupWorkspaceObserver()
@@ -26,10 +32,11 @@ class WindowOperation {
     private func setupConfigObserver() {
         configObserver = NotificationCenter.default.addObserver(
             forName: Config.didReloadNotification,
-            object: nil,
+            object: config,
             queue: .main
         ) { [weak self] _ in
-            self?.hotkey = ParsedHotkey.from(config: Config.shared.hotkeyConfig)
+            guard let self = self else { return }
+            self.hotkey = ParsedHotkey.from(config: self.config.hotkeyConfig)
         }
     }
 
@@ -101,20 +108,27 @@ class WindowOperation {
     }
 
     private func toggleMoveMode() {
-        isInMoveMode.toggle()
-
         if isInMoveMode {
-            currentWindow = getActiveWindow()
-
-            if let window = currentWindow {
-                highlightWindow?.highlight(window: window)
-                startObservingWindow(window)
-            }
+            exitMoveMode()
         } else {
-            highlightWindow?.hide()
-            stopObservingWindow()
-            currentWindow = nil
+            enterMoveMode()
         }
+    }
+
+    private func enterMoveMode() {
+        guard let window = getActiveWindow() else { return }
+
+        isInMoveMode = true
+        currentWindow = window
+        highlightWindow?.highlight(window: window)
+        startObservingWindow(window)
+    }
+
+    private func exitMoveMode() {
+        isInMoveMode = false
+        highlightWindow?.hide()
+        stopObservingWindow()
+        currentWindow = nil
     }
 
     private func handleMoveMode(keyCode: Int64, event: CGEvent) -> Unmanaged<CGEvent>? {
@@ -122,20 +136,20 @@ class WindowOperation {
         let isShift = flags.contains(.maskShift)
         let isCtrl = flags.contains(.maskControl)
 
-        switch keyCode {
-        case 53, 36:  // ESC, Enter
+        switch Int(keyCode) {
+        case kVK_Escape, kVK_Return:
             toggleMoveMode()
             return nil
-        case 126, 40:  // Up, k
+        case kVK_UpArrow, kVK_ANSI_K:
             applyAction(dx: 0, dy: -1, isCtrl: isCtrl, isShift: isShift)
             return nil
-        case 125, 38:  // Down, j
+        case kVK_DownArrow, kVK_ANSI_J:
             applyAction(dx: 0, dy: 1, isCtrl: isCtrl, isShift: isShift)
             return nil
-        case 123, 4:  // Left, h
+        case kVK_LeftArrow, kVK_ANSI_H:
             applyAction(dx: -1, dy: 0, isCtrl: isCtrl, isShift: isShift)
             return nil
-        case 124, 37:  // Right, l
+        case kVK_RightArrow, kVK_ANSI_L:
             applyAction(dx: 1, dy: 0, isCtrl: isCtrl, isShift: isShift)
             return nil
         default:
@@ -144,7 +158,7 @@ class WindowOperation {
     }
 
     private func applyAction(dx: CGFloat, dy: CGFloat, isCtrl: Bool, isShift: Bool) {
-        let step: CGFloat = isCtrl ? 100 : 20
+        let step = isCtrl ? Self.fastMoveStep : Self.moveStep
         if isShift {
             resizeWindow(deltaWidth: dx * step, deltaHeight: dy * step)
         } else {
@@ -169,44 +183,21 @@ class WindowOperation {
     }
 
     private func moveWindow(deltaX: CGFloat, deltaY: CGFloat) {
-        guard let window = currentWindow else { return }
-
-        var positionValue: AnyObject?
-        let result = AXUIElementCopyAttributeValue(
-            window, kAXPositionAttribute as CFString, &positionValue)
-
-        guard result == .success, let position = positionValue else { return }
-
-        var point = CGPoint.zero
-        // swiftlint:disable:next force_cast
-        AXValueGetValue(position as! AXValue, .cgPoint, &point)
+        guard let window = currentWindow, var point = window.position else { return }
 
         point.x += deltaX
         point.y += deltaY
 
-        if let newPosition = AXValueCreate(.cgPoint, &point) {
-            AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, newPosition)
-        }
+        window.setPosition(point)
     }
 
     private func resizeWindow(deltaWidth: CGFloat, deltaHeight: CGFloat) {
-        guard let window = currentWindow else { return }
+        guard let window = currentWindow, var size = window.size else { return }
 
-        var sizeValue: AnyObject?
-        let result = AXUIElementCopyAttributeValue(window, kAXSizeAttribute as CFString, &sizeValue)
+        size.width = max(Self.minWindowDimension, size.width + deltaWidth)
+        size.height = max(Self.minWindowDimension, size.height + deltaHeight)
 
-        guard result == .success, let size = sizeValue else { return }
-
-        var currentSize = CGSize.zero
-        // swiftlint:disable:next force_cast
-        AXValueGetValue(size as! AXValue, .cgSize, &currentSize)
-
-        currentSize.width = max(100, currentSize.width + deltaWidth)
-        currentSize.height = max(100, currentSize.height + deltaHeight)
-
-        if let newSize = AXValueCreate(.cgSize, &currentSize) {
-            AXUIElementSetAttributeValue(window, kAXSizeAttribute as CFString, newSize)
-        }
+        window.setSize(size)
     }
 
     private func setupWorkspaceObserver() {
@@ -221,10 +212,7 @@ class WindowOperation {
 
     private func handleAppSwitch() {
         if isInMoveMode {
-            isInMoveMode = false
-            highlightWindow?.hide()
-            stopObservingWindow()
-            currentWindow = nil
+            exitMoveMode()
         }
     }
 

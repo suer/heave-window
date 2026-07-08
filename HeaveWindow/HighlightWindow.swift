@@ -34,24 +34,9 @@ class HighlightWindow: NSWindow {
     }
 
     private func getWindowFrame(_ window: AXUIElement) -> NSRect? {
-        var positionValue: AnyObject?
-        var sizeValue: AnyObject?
-
-        guard
-            AXUIElementCopyAttributeValue(window, kAXPositionAttribute as CFString, &positionValue)
-                == .success,
-            AXUIElementCopyAttributeValue(window, kAXSizeAttribute as CFString, &sizeValue) == .success
-        else {
+        guard var position = window.position, let size = window.size else {
             return nil
         }
-
-        var position = CGPoint.zero
-        var size = CGSize.zero
-
-        // swiftlint:disable:next force_cast
-        AXValueGetValue(positionValue as! AXValue, .cgPoint, &position)
-        // swiftlint:disable:next force_cast
-        AXValueGetValue(sizeValue as! AXValue, .cgSize, &size)
 
         if let screen = NSScreen.screens.first {
             let screenHeight = screen.frame.height

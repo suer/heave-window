@@ -22,10 +22,13 @@ class Config {
     static let shared = Config()
 
     static let didReloadNotification = Notification.Name("ConfigDidReload")
+    static let didFailToParseNotification = Notification.Name("ConfigDidFailToParse")
+    static let parseErrorUserInfoKey = "error"
 
     let configPath: String
     private(set) var appConfig: AppConfig?
     private var configDirectoryMonitor: DispatchSourceFileSystemObject?
+    private var hadParseError = false
 
     static let defaultConfigContent = """
         hotkey:
@@ -39,11 +42,17 @@ class Config {
         appConfig?.hotkey ?? HotkeyConfig.default
     }
 
-    private init() {
-        let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
-        configPath = "\(homeDir)/.config/heave-window/config.yml"
+    static let defaultConfigPath =
+        "\(FileManager.default.homeDirectoryForCurrentUser.path)/.config/heave-window/config.yml"
+
+    init(configPath: String = Config.defaultConfigPath) {
+        self.configPath = configPath
         reload()
         startWatchingConfigDirectory()
+    }
+
+    deinit {
+        configDirectoryMonitor?.cancel()
     }
 
     func reload() {
@@ -55,14 +64,24 @@ class Config {
             let yamlString = try? String(contentsOfFile: configPath, encoding: .utf8)
         else {
             appConfig = nil
+            hadParseError = false
             return
         }
 
         do {
             appConfig = try YAMLDecoder().decode(AppConfig.self, from: yamlString)
+            hadParseError = false
         } catch {
             logger.error("Failed to parse config: \(error)")
             appConfig = nil
+            if !hadParseError {
+                hadParseError = true
+                NotificationCenter.default.post(
+                    name: Config.didFailToParseNotification,
+                    object: self,
+                    userInfo: [Config.parseErrorUserInfoKey: "\(error)"]
+                )
+            }
         }
     }
 
@@ -85,9 +104,10 @@ class Config {
         configDirectoryMonitor = monitor
     }
 
-    func createDefaultConfigIfNeeded() -> Bool {
+    func ensureConfigFile() -> URL? {
+        let configURL = URL(fileURLWithPath: configPath)
         if FileManager.default.fileExists(atPath: configPath) {
-            return true
+            return configURL
         }
 
         let configDir = (configPath as NSString).deletingLastPathComponent
@@ -98,10 +118,10 @@ class Config {
                 toFile: configPath, atomically: true, encoding: .utf8)
             reload()
             startWatchingConfigDirectory()
-            return true
+            return configURL
         } catch {
             logger.error("Failed to create default config: \(error)")
-            return false
+            return nil
         }
     }
 }

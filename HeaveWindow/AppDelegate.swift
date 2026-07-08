@@ -7,6 +7,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var windowOperation: WindowOperation?
     var accessibilityCheckTimer: Timer?
     private let updaterController: SPUStandardUpdaterController
+    private var configParseErrorObserver: NSObjectProtocol?
 
     override init() {
         updaterController = SPUStandardUpdaterController(
@@ -18,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        setupConfigParseErrorObserver()
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
@@ -72,9 +74,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openSettings() {
-        if Config.shared.createDefaultConfigIfNeeded() {
-            let configURL = URL(fileURLWithPath: Config.shared.configPath)
+        if let configURL = Config.shared.ensureConfigFile() {
             NSWorkspace.shared.open(configURL)
+        }
+    }
+
+    private func setupConfigParseErrorObserver() {
+        configParseErrorObserver = NotificationCenter.default.addObserver(
+            forName: Config.didFailToParseNotification,
+            object: nil,
+            queue: .main
+        ) { notification in
+            let detail = notification.userInfo?[Config.parseErrorUserInfoKey] as? String ?? ""
+            let alert = NSAlert()
+            alert.alertStyle = .warning
+            alert.messageText = NSLocalizedString(
+                "alert.configParseFailed.title", comment: "Config parse failure alert title")
+            alert.informativeText = String(
+                format: NSLocalizedString(
+                    "alert.configParseFailed.message", comment: "Config parse failure alert message"),
+                detail)
+            alert.runModal()
         }
     }
 
