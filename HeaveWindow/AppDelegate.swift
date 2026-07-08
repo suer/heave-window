@@ -72,8 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openSettings() {
-        if Config.shared.createDefaultConfigIfNeeded() {
-            let configURL = URL(fileURLWithPath: Config.shared.configPath)
+        if let configURL = Config.shared.ensureConfigFile() {
             NSWorkspace.shared.open(configURL)
         }
     }

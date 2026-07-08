@@ -87,9 +87,10 @@ class Config {
         configDirectoryMonitor = monitor
     }
 
-    func createDefaultConfigIfNeeded() -> Bool {
+    func ensureConfigFile() -> URL? {
+        let configURL = URL(fileURLWithPath: configPath)
         if FileManager.default.fileExists(atPath: configPath) {
-            return true
+            return configURL
         }
 
         let configDir = (configPath as NSString).deletingLastPathComponent
@@ -100,10 +101,10 @@ class Config {
                 toFile: configPath, atomically: true, encoding: .utf8)
             reload()
             startWatchingConfigDirectory()
-            return true
+            return configURL
         } catch {
             logger.error("Failed to create default config: \(error)")
-            return false
+            return nil
         }
     }
 }
