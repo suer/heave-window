@@ -101,20 +101,28 @@ class WindowOperation {
     }
 
     private func toggleMoveMode() {
-        isInMoveMode.toggle()
-
         if isInMoveMode {
-            currentWindow = getActiveWindow()
-
-            if let window = currentWindow {
-                highlightWindow?.highlight(window: window)
-                startObservingWindow(window)
-            }
+            exitMoveMode()
         } else {
-            highlightWindow?.hide()
-            stopObservingWindow()
-            currentWindow = nil
+            enterMoveMode()
         }
+    }
+
+    private func enterMoveMode() {
+        isInMoveMode = true
+        currentWindow = getActiveWindow()
+
+        if let window = currentWindow {
+            highlightWindow?.highlight(window: window)
+            startObservingWindow(window)
+        }
+    }
+
+    private func exitMoveMode() {
+        isInMoveMode = false
+        highlightWindow?.hide()
+        stopObservingWindow()
+        currentWindow = nil
     }
 
     private func handleMoveMode(keyCode: Int64, event: CGEvent) -> Unmanaged<CGEvent>? {
@@ -198,10 +206,7 @@ class WindowOperation {
 
     private func handleAppSwitch() {
         if isInMoveMode {
-            isInMoveMode = false
-            highlightWindow?.hide()
-            stopObservingWindow()
-            currentWindow = nil
+            exitMoveMode()
         }
     }
 
