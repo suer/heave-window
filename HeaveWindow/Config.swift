@@ -22,10 +22,13 @@ class Config {
     static let shared = Config()
 
     static let didReloadNotification = Notification.Name("ConfigDidReload")
+    static let didFailToParseNotification = Notification.Name("ConfigDidFailToParse")
+    static let parseErrorUserInfoKey = "error"
 
     let configPath: String
     private(set) var appConfig: AppConfig?
     private var configDirectoryMonitor: DispatchSourceFileSystemObject?
+    private var hadParseError = false
 
     static let defaultConfigContent = """
         hotkey:
@@ -57,14 +60,24 @@ class Config {
             let yamlString = try? String(contentsOfFile: configPath, encoding: .utf8)
         else {
             appConfig = nil
+            hadParseError = false
             return
         }
 
         do {
             appConfig = try YAMLDecoder().decode(AppConfig.self, from: yamlString)
+            hadParseError = false
         } catch {
             logger.error("Failed to parse config: \(error)")
             appConfig = nil
+            if !hadParseError {
+                hadParseError = true
+                NotificationCenter.default.post(
+                    name: Config.didFailToParseNotification,
+                    object: self,
+                    userInfo: [Config.parseErrorUserInfoKey: "\(error)"]
+                )
+            }
         }
     }
 

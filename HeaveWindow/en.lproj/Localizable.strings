@@ -8,3 +8,5 @@
 /* Alerts */
 "alert.eventTapFailed.title" = "Failed to start keyboard monitoring";
 "alert.eventTapFailed.message" = "HeaveWindow could not create an event tap, so the hotkey will not work. Please check Accessibility and Input Monitoring permissions in System Settings, then restart the app.";
+"alert.configParseFailed.title" = "Failed to parse config.yml";
+"alert.configParseFailed.message" = "The settings could not be read, so the default hotkey is used.\n\n%@";

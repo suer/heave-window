@@ -8,3 +8,5 @@
 /* Alerts */
 "alert.eventTapFailed.title" = "キーボード監視を開始できませんでした";
 "alert.eventTapFailed.message" = "イベントタップを作成できなかったため、ホットキーが動作しません。システム設定でアクセシビリティと入力監視の許可を確認し、アプリを再起動してください。";
+"alert.configParseFailed.title" = "config.yml を解析できませんでした";
+"alert.configParseFailed.message" = "設定を読み込めなかったため、デフォルトのホットキーを使用します。\n\n%@";

@@ -1,5 +1,8 @@
 import Carbon
 import Cocoa
+import os
+
+private let logger = Logger(subsystem: "com.heavewindow.HeaveWindow", category: "HotkeyParser")
 
 struct ParsedHotkey {
     let keyCode: Int64
@@ -12,17 +15,23 @@ struct ParsedHotkey {
 
     static func from(config: HotkeyConfig) -> ParsedHotkey {
         guard let keyCode = keyCodeMap[config.key.lowercased()] else {
+            logger.warning(
+                "Unknown key \"\(config.key, privacy: .public)\" in hotkey config, using default hotkey")
             return .default
         }
 
         var flags: CGEventFlags = []
         for modifier in config.modifiers {
-            if let flag = modifierMap[modifier.lowercased()] {
-                flags.insert(flag)
+            guard let flag = modifierMap[modifier.lowercased()] else {
+                logger.warning(
+                    "Unknown modifier \"\(modifier, privacy: .public)\" in hotkey config, using default hotkey")
+                return .default
             }
+            flags.insert(flag)
         }
 
         if flags.isEmpty {
+            logger.warning("No modifiers in hotkey config, using default hotkey")
             return .default
         }
 
