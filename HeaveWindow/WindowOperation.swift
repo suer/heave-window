@@ -18,9 +18,11 @@ class WindowOperation {
     private var windowObserver: AXObserver?
     private var configObserver: NSObjectProtocol?
     private var hotkey: ParsedHotkey
+    private let config: Config
 
-    init() {
-        hotkey = ParsedHotkey.from(config: Config.shared.hotkeyConfig)
+    init(config: Config = .shared) {
+        self.config = config
+        hotkey = ParsedHotkey.from(config: config.hotkeyConfig)
         setupEventTap()
         highlightWindow = HighlightWindow()
         setupWorkspaceObserver()
@@ -30,10 +32,11 @@ class WindowOperation {
     private func setupConfigObserver() {
         configObserver = NotificationCenter.default.addObserver(
             forName: Config.didReloadNotification,
-            object: nil,
+            object: config,
             queue: .main
         ) { [weak self] _ in
-            self?.hotkey = ParsedHotkey.from(config: Config.shared.hotkeyConfig)
+            guard let self = self else { return }
+            self.hotkey = ParsedHotkey.from(config: self.config.hotkeyConfig)
         }
     }
 

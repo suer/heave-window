@@ -39,9 +39,11 @@ class Config {
         appConfig?.hotkey ?? HotkeyConfig.default
     }
 
-    private init() {
-        let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
-        configPath = "\(homeDir)/.config/heave-window/config.yml"
+    static let defaultConfigPath =
+        "\(FileManager.default.homeDirectoryForCurrentUser.path)/.config/heave-window/config.yml"
+
+    init(configPath: String = Config.defaultConfigPath) {
+        self.configPath = configPath
         reload()
         startWatchingConfigDirectory()
     }
