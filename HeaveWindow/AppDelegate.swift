@@ -5,7 +5,7 @@ import SwiftUI
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var windowOperation: WindowOperation?
-    var accessibilityCheckTimer: Timer?
+    private var accessibilityObserver: NSObjectProtocol?
     private let updaterController: SPUStandardUpdaterController
     private var configParseErrorObserver: NSObjectProtocol?
 
@@ -20,19 +20,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupConfigParseErrorObserver()
+        setupStatusItem()
+        setupWithAccessibilityCheck()
+    }
 
+    private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        statusItem?.button?.image = NSImage(named: "MenuIcon")
+        statusItem?.menu = buildMenu()
+    }
 
-        if let button = statusItem?.button {
-            button.image = NSImage(named: "MenuIcon")
-            button.action = #selector(statusBarButtonClicked)
-        }
+    private func buildMenu() -> NSMenu {
         let menu = NSMenu()
         menu.addItem(
-            NSMenuItem(title: NSLocalizedString("menu.about", comment: "About menu item"), action: #selector(showAboutPanel), keyEquivalent: ""))
+            NSMenuItem(
+                title: NSLocalizedString("menu.about", comment: "About menu item"),
+                action: #selector(showAboutPanel),
+                keyEquivalent: ""
+            ))
         menu.addItem(
             NSMenuItem(
-                title: NSLocalizedString("menu.checkForUpdates", comment: "Check for updates menu item"), action: #selector(checkForUpdates), keyEquivalent: ""))
+                title: NSLocalizedString("menu.checkForUpdates", comment: "Check for updates menu item"),
+                action: #selector(checkForUpdates),
+                keyEquivalent: ""
+            ))
         menu.addItem(NSMenuItem.separator())
         if #available(macOS 13.0, *) {
             let launchAtLoginItem = NSMenuItem(
@@ -45,17 +56,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         menu.addItem(
             NSMenuItem(
-                title: NSLocalizedString("menu.settings", comment: "Settings menu item"), action: #selector(openSettings), keyEquivalent: ","))
+                title: NSLocalizedString("menu.settings", comment: "Settings menu item"),
+                action: #selector(openSettings),
+                keyEquivalent: ","
+            ))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(
-            NSMenuItem(title: NSLocalizedString("menu.quit", comment: "Quit menu item"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
-        statusItem?.menu = menu
-
-        setupWithAccessibilityCheck()
-    }
-
-    @objc func statusBarButtonClicked() {
-        statusItem?.menu?.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+            NSMenuItem(
+                title: NSLocalizedString("menu.quit", comment: "Quit menu item"),
+                action: #selector(NSApplication.terminate(_:)),
+                keyEquivalent: "q"
+            ))
+        return menu
     }
 
     @objc func checkForUpdates() {
@@ -104,22 +116,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
             AXIsProcessTrustedWithOptions(options as CFDictionary)
-            startAccessibilityPolling()
+            startObservingAccessibilityGrant()
         }
     }
 
-    func startAccessibilityPolling() {
-        accessibilityCheckTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            if AXIsProcessTrusted() {
-                self?.enableWindowOperation()
-                self?.stopAccessibilityPolling()
+    private func startObservingAccessibilityGrant() {
+        accessibilityObserver = DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name("com.apple.accessibility.api"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            // The notification can arrive before the permission change is visible
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                guard let self = self, AXIsProcessTrusted() else { return }
+                self.enableWindowOperation()
+                self.stopObservingAccessibilityGrant()
             }
         }
     }
 
-    func stopAccessibilityPolling() {
-        accessibilityCheckTimer?.invalidate()
-        accessibilityCheckTimer = nil
+    private func stopObservingAccessibilityGrant() {
+        if let observer = accessibilityObserver {
+            DistributedNotificationCenter.default().removeObserver(observer)
+            accessibilityObserver = nil
+        }
     }
 
     func enableWindowOperation() {

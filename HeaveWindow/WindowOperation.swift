@@ -13,7 +13,7 @@ class WindowOperation {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var currentWindow: AXUIElement?
-    private var highlightWindow: HighlightWindow?
+    private let highlightWindow = HighlightWindow()
     private var workspaceObserver: NSObjectProtocol?
     private var windowObserver: AXObserver?
     private var configObserver: NSObjectProtocol?
@@ -24,7 +24,6 @@ class WindowOperation {
         self.config = config
         hotkey = ParsedHotkey.from(config: config.hotkeyConfig)
         setupEventTap()
-        highlightWindow = HighlightWindow()
         setupWorkspaceObserver()
         setupConfigObserver()
     }
@@ -116,17 +115,17 @@ class WindowOperation {
     }
 
     private func enterMoveMode() {
-        guard let window = getActiveWindow() else { return }
+        guard let (window, pid) = getActiveWindow() else { return }
 
         isInMoveMode = true
         currentWindow = window
-        highlightWindow?.highlight(window: window)
-        startObservingWindow(window)
+        highlightWindow.highlight(window: window)
+        startObservingWindow(window, pid: pid)
     }
 
     private func exitMoveMode() {
         isInMoveMode = false
-        highlightWindow?.hide()
+        highlightWindow.hide()
         stopObservingWindow()
         currentWindow = nil
     }
@@ -141,42 +140,43 @@ class WindowOperation {
             toggleMoveMode()
             return nil
         case kVK_UpArrow, kVK_ANSI_K:
-            applyAction(dx: 0, dy: -1, isCtrl: isCtrl, isShift: isShift)
+            applyAction(deltaX: 0, deltaY: -1, isCtrl: isCtrl, isShift: isShift)
             return nil
         case kVK_DownArrow, kVK_ANSI_J:
-            applyAction(dx: 0, dy: 1, isCtrl: isCtrl, isShift: isShift)
+            applyAction(deltaX: 0, deltaY: 1, isCtrl: isCtrl, isShift: isShift)
             return nil
         case kVK_LeftArrow, kVK_ANSI_H:
-            applyAction(dx: -1, dy: 0, isCtrl: isCtrl, isShift: isShift)
+            applyAction(deltaX: -1, deltaY: 0, isCtrl: isCtrl, isShift: isShift)
             return nil
         case kVK_RightArrow, kVK_ANSI_L:
-            applyAction(dx: 1, dy: 0, isCtrl: isCtrl, isShift: isShift)
+            applyAction(deltaX: 1, deltaY: 0, isCtrl: isCtrl, isShift: isShift)
             return nil
         default:
             return Unmanaged.passUnretained(event)
         }
     }
 
-    private func applyAction(dx: CGFloat, dy: CGFloat, isCtrl: Bool, isShift: Bool) {
+    private func applyAction(deltaX: CGFloat, deltaY: CGFloat, isCtrl: Bool, isShift: Bool) {
         let step = isCtrl ? Self.fastMoveStep : Self.moveStep
         if isShift {
-            resizeWindow(deltaWidth: dx * step, deltaHeight: dy * step)
+            resizeWindow(deltaWidth: deltaX * step, deltaHeight: deltaY * step)
         } else {
-            moveWindow(deltaX: dx * step, deltaY: dy * step)
+            moveWindow(deltaX: deltaX * step, deltaY: deltaY * step)
         }
     }
 
-    private func getActiveWindow() -> AXUIElement? {
+    private func getActiveWindow() -> (window: AXUIElement, pid: pid_t)? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
-        let appRef = AXUIElementCreateApplication(app.processIdentifier)
+        let pid = app.processIdentifier
+        let appRef = AXUIElementCreateApplication(pid)
 
         var value: AnyObject?
         let result = AXUIElementCopyAttributeValue(
             appRef, kAXFocusedWindowAttribute as CFString, &value)
 
-        if result == .success {
+        if result == .success, let value = value, CFGetTypeID(value) == AXUIElementGetTypeID() {
             // swiftlint:disable:next force_cast
-            return (value as! AXUIElement)
+            return (value as! AXUIElement, pid)
         }
 
         return nil
@@ -216,10 +216,7 @@ class WindowOperation {
         }
     }
 
-    private func startObservingWindow(_ window: AXUIElement) {
-        guard let app = NSWorkspace.shared.frontmostApplication else { return }
-        let pid = app.processIdentifier
-
+    private func startObservingWindow(_ window: AXUIElement, pid: pid_t) {
         var observer: AXObserver?
         let result = AXObserverCreate(
             pid,
@@ -227,7 +224,7 @@ class WindowOperation {
                 guard let refcon = refcon else { return }
                 let operation = Unmanaged<WindowOperation>.fromOpaque(refcon).takeUnretainedValue()
                 DispatchQueue.main.async {
-                    operation.highlightWindow?.highlight(window: element)
+                    operation.highlightWindow.highlight(window: element)
                 }
             }, &observer)
 
@@ -258,6 +255,10 @@ class WindowOperation {
     deinit {
         if let eventTap = eventTap {
             CGEvent.tapEnable(tap: eventTap, enable: false)
+            CFMachPortInvalidate(eventTap)
+        }
+        if let runLoopSource = runLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
         }
         stopObservingWindow()
         if let observer = workspaceObserver {
