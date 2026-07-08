@@ -12,13 +12,25 @@ class WindowOperation {
     private var highlightWindow: HighlightWindow?
     private var workspaceObserver: NSObjectProtocol?
     private var windowObserver: AXObserver?
-    private let hotkey: ParsedHotkey
+    private var configObserver: NSObjectProtocol?
+    private var hotkey: ParsedHotkey
 
     init() {
         hotkey = ParsedHotkey.from(config: Config.shared.hotkeyConfig)
         setupEventTap()
         highlightWindow = HighlightWindow()
         setupWorkspaceObserver()
+        setupConfigObserver()
+    }
+
+    private func setupConfigObserver() {
+        configObserver = NotificationCenter.default.addObserver(
+            forName: Config.didReloadNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.hotkey = ParsedHotkey.from(config: Config.shared.hotkeyConfig)
+        }
     }
 
     private func setupEventTap() {
@@ -262,6 +274,9 @@ class WindowOperation {
         stopObservingWindow()
         if let observer = workspaceObserver {
             NSWorkspace.shared.notificationCenter.removeObserver(observer)
+        }
+        if let observer = configObserver {
+            NotificationCenter.default.removeObserver(observer)
         }
     }
 }
