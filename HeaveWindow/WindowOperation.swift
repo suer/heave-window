@@ -109,13 +109,12 @@ class WindowOperation {
     }
 
     private func enterMoveMode() {
-        isInMoveMode = true
-        currentWindow = getActiveWindow()
+        guard let window = getActiveWindow() else { return }
 
-        if let window = currentWindow {
-            highlightWindow?.highlight(window: window)
-            startObservingWindow(window)
-        }
+        isInMoveMode = true
+        currentWindow = window
+        highlightWindow?.highlight(window: window)
+        startObservingWindow(window)
     }
 
     private func exitMoveMode() {
