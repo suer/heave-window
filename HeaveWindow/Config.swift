@@ -51,6 +51,10 @@ class Config {
         startWatchingConfigDirectory()
     }
 
+    deinit {
+        configDirectoryMonitor?.cancel()
+    }
+
     func reload() {
         defer {
             NotificationCenter.default.post(name: Config.didReloadNotification, object: self)
