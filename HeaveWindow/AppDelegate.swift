@@ -20,10 +20,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupConfigParseErrorObserver()
+        setupStatusItem()
+        setupWithAccessibilityCheck()
+    }
 
+    private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-
         statusItem?.button?.image = NSImage(named: "MenuIcon")
+        statusItem?.menu = buildMenu()
+    }
+
+    private func buildMenu() -> NSMenu {
         let menu = NSMenu()
         menu.addItem(
             NSMenuItem(title: NSLocalizedString("menu.about", comment: "About menu item"), action: #selector(showAboutPanel), keyEquivalent: ""))
@@ -46,9 +53,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem.separator())
         menu.addItem(
             NSMenuItem(title: NSLocalizedString("menu.quit", comment: "Quit menu item"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
-        statusItem?.menu = menu
-
-        setupWithAccessibilityCheck()
+        return menu
     }
 
     @objc func checkForUpdates() {
