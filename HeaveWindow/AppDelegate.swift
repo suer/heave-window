@@ -71,6 +71,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func checkForUpdates() {
+        NSApplication.shared.activate(ignoringOtherApps: true)
         updaterController.checkForUpdates(nil)
     }
 
