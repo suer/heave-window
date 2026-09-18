@@ -54,6 +54,6 @@ hotkey:
 
 ## Requirements
 
-- macOS 11.5 or later
+- macOS 12.0 or later
 - Accessibility permissions (System Settings > Privacy & Security > Accessibility)
 
